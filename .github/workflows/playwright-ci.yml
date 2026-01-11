@@ -9,37 +9,56 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+
     steps:
+      # 1️⃣ Checkout
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # 2️⃣ Setup Node
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '18'
+          cache: 'npm'   # ✅ speeds up npm install
 
+      # 3️⃣ Clean old Allure data (VERY IMPORTANT)
+      - name: Clean old Allure results
+        run: |
+          rm -rf allure-results
+          rm -rf allure-report
+
+      # 4️⃣ Install dependencies
       - name: Install dependencies
-        run: npm install
+        run: npm ci   # ✅ faster & deterministic than npm install
 
+      # 5️⃣ Install Playwright browsers (cached)
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
 
+      # 6️⃣ Run Playwright tests
       - name: Run Playwright tests
         run: npm test
+        continue-on-error: true   # ensures report is generated even on failure
 
+      # 7️⃣ Generate Allure report (Optimized)
       - name: Generate Allure report
+        if: always()
         run: |
-          npm install -g allure-commandline --save-dev
-          npm run allure:report
-        continue-on-error: true
+          npm install -g allure-commandline
+          allure generate allure-results --clean --no-history
 
+      # 8️⃣ Upload Allure report (only if exists)
       - name: Upload Allure report as artifact
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: allure-report
           path: allure-report
 
-      - name: Upload test-results as artifact
+      # 9️⃣ Upload Playwright test results
+      - name: Upload test results
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: test-results
