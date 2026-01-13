@@ -1,11 +1,6 @@
 pipeline {
     agent any
 
-    environment {
-        // Update this PATH to your actual Node.js installation path
-        PATH = "/Users/atulingale/.nvm/versions/node/v25.2.1/bin:$PATH"  
-    }
-
     options {
         // Keep only last 10 builds
         buildDiscarder(logRotator(numToKeepStr: '10'))
@@ -24,7 +19,12 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 echo "📦 Installing npm dependencies..."
-                sh 'npm install'
+                sh '''
+                    export NVM_DIR="$HOME/.nvm"
+                    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+                    nvm use 25
+                    npm install
+                '''
             }
         }
 
@@ -33,19 +33,34 @@ pipeline {
                 stage('Chrome') {
                     steps {
                         echo "🌐 Running tests on Chrome..."
-                        sh 'npx playwright test --project=chromium --reporter=html'
+                        sh '''
+                            export NVM_DIR="$HOME/.nvm"
+                            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+                            nvm use 25
+                            npx playwright test --project=chromium --reporter=html
+                        '''
                     }
                 }
                 stage('Firefox') {
                     steps {
                         echo "🦊 Running tests on Firefox..."
-                        sh 'npx playwright test --project=firefox --reporter=html'
+                        sh '''
+                            export NVM_DIR="$HOME/.nvm"
+                            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+                            nvm use 25
+                            npx playwright test --project=firefox --reporter=html
+                        '''
                     }
                 }
                 stage('Edge') {
                     steps {
                         echo "🟦 Running tests on Edge..."
-                        sh 'npx playwright test --project=msedge --reporter=html'
+                        sh '''
+                            export NVM_DIR="$HOME/.nvm"
+                            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+                            nvm use 25
+                            npx playwright test --project=msedge --reporter=html
+                        '''
                     }
                 }
             }
