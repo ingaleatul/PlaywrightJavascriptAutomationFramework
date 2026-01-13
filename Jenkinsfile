@@ -2,8 +2,7 @@ pipeline {
     agent any
 
     environment {
-        // Use globally installed Node via Homebrew
-        PATH = "/opt/homebrew/bin:$PATH"
+        PATH = "/opt/homebrew/bin:$PATH"  // global Node
     }
 
     options {
@@ -14,14 +13,12 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                echo "🔄 Checking out code from GitHub..."
                 git branch: 'main', url: 'https://github.com/ingaleatul/PlaywrightJavascriptAutomationFramework.git'
             }
         }
 
         stage('Install Dependencies') {
             steps {
-                echo "📦 Installing npm dependencies..."
                 sh 'npm install'
             }
         }
@@ -29,29 +26,19 @@ pipeline {
         stage('Run Playwright Tests') {
             parallel {
                 stage('Chrome') {
-                    steps {
-                        echo "🌐 Running tests on Chrome..."
-                        sh 'npx playwright test --project=chromium --reporter=html'
-                    }
+                    steps { sh 'npx playwright test --project=chromium' }
                 }
                 stage('Firefox') {
-                    steps {
-                        echo "🦊 Running tests on Firefox..."
-                        sh 'npx playwright test --project=firefox --reporter=html'
-                    }
+                    steps { sh 'npx playwright test --project=firefox' }
                 }
                 stage('Edge') {
-                    steps {
-                        echo "🟦 Running tests on Edge..."
-                        sh 'npx playwright test --project=msedge --reporter=html'
-                    }
+                    steps { sh 'npx playwright test --project=msedge' }
                 }
             }
         }
 
-        stage('Archive Reports') {
+        stage('Publish Playwright HTML Report') {
             steps {
-                echo "📄 Archiving Playwright HTML reports..."
                 archiveArtifacts artifacts: 'playwright-report/**', allowEmptyArchive: true
                 publishHTML([
                     allowMissing: true,
@@ -59,18 +46,21 @@ pipeline {
                     keepAll: true,
                     reportDir: 'playwright-report',
                     reportFiles: 'index.html',
-                    reportName: 'Playwright Report'
+                    reportName: 'Playwright HTML Report'
                 ])
+            }
+        }
+
+        stage('Publish Allure Report') {
+            steps {
+                // Publish Allure from allure-results
+                allure includeProperties: false, jdk: '', results: [[path: 'allure-results']]
             }
         }
     }
 
     post {
-        success {
-            echo "✅ All tests passed!"
-        }
-        failure {
-            echo "❌ Some tests failed! Check the Playwright HTML report."
-        }
+        success { echo "✅ All tests passed!" }
+        failure { echo "❌ Some tests failed! Check Playwright & Allure reports." }
     }
 }
