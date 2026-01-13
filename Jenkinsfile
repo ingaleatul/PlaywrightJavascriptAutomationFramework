@@ -2,9 +2,7 @@ pipeline {
     agent any
 
     options {
-        // Keep only last 10 builds
         buildDiscarder(logRotator(numToKeepStr: '10'))
-        // Timeout for the pipeline
         timeout(time: 30, unit: 'MINUTES')
     }
 
@@ -21,7 +19,7 @@ pipeline {
                 echo "📦 Installing npm dependencies..."
                 sh '''
                     export NVM_DIR="$HOME/.nvm"
-                    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+                    [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
                     nvm use 25
                     npm install
                 '''
@@ -35,7 +33,7 @@ pipeline {
                         echo "🌐 Running tests on Chrome..."
                         sh '''
                             export NVM_DIR="$HOME/.nvm"
-                            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+                            [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
                             nvm use 25
                             npx playwright test --project=chromium --reporter=html
                         '''
@@ -46,7 +44,7 @@ pipeline {
                         echo "🦊 Running tests on Firefox..."
                         sh '''
                             export NVM_DIR="$HOME/.nvm"
-                            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+                            [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
                             nvm use 25
                             npx playwright test --project=firefox --reporter=html
                         '''
@@ -57,7 +55,7 @@ pipeline {
                         echo "🟦 Running tests on Edge..."
                         sh '''
                             export NVM_DIR="$HOME/.nvm"
-                            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+                            [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
                             nvm use 25
                             npx playwright test --project=msedge --reporter=html
                         '''
