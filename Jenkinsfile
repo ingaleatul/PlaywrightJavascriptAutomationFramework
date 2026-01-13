@@ -53,8 +53,11 @@ pipeline {
 
         stage('Publish Allure Report') {
             steps {
-                // Publish Allure from allure-results
-                allure includeProperties: false, jdk: '', results: [[path: 'allure-results']]
+                allure(
+                    includeProperties: false,
+                    jdk: '',
+                    results: [[path: 'allure-results']]
+                )
             }
         }
     }
@@ -62,5 +65,9 @@ pipeline {
     post {
         success { echo "✅ All tests passed!" }
         failure { echo "❌ Some tests failed! Check Playwright & Allure reports." }
+        always {
+            archiveArtifacts artifacts: '**/playwright-report/**', allowEmptyArchive: true
+            archiveArtifacts artifacts: '**/allure-results/**', allowEmptyArchive: true
+        }
     }
 }
